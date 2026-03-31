@@ -32,7 +32,12 @@ fn handleUpgrade(upgrader: &mut Upgrader, total_score: &mut f64) {
             *total_score -= upgrader.cost;
             upgrader.cost *= upgrader.cost_multi;
             upgrader.count += 1.0;
-            upgrader.passive_score_ps += 20.0;
+            upgrader.passive_score_ps += 10.0;
+        } else if upgrader.name == "cowboy_chordist" {
+            *total_score -= upgrader.cost;
+            upgrader.cost *= upgrader.cost_multi;
+            upgrader.count += 1.0;
+            upgrader.passive_score_ps += 1000.0;
         }
     }
 }
@@ -115,6 +120,13 @@ impl Default for MyApp {
                     cost: 100.0,
                     count: 0.0,
                     cost_multi: 1.15,
+                    passive_score_ps: 0.0,
+                },
+                Upgrader {
+                    name: "cowboy_chordist".to_string(),
+                    cost: 10000.0,
+                    count: 0.0,
+                    cost_multi: 1.5,
                     passive_score_ps: 0.0,
                 },
             ],

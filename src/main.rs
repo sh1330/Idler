@@ -42,6 +42,23 @@ fn handleUpgrade(upgrader: &mut Upgrader, total_score: &mut f64) {
     }
 }
 
+fn handleClickyUpgraders(clicky_upgraders: &mut ClickyUpgraders, total_score: &mut f64) {
+    if can_afford(clicky_upgraders.cost, *total_score) {
+        if clicky_upgraders.name == "base" {
+            *total_score -= clicky_upgraders.cost;
+            clicky_upgraders.cost *= clicky_upgraders.cost_multi;
+            clicky_upgraders.count += 1.0;
+        } else if clicky_upgraders.name == "multi" {
+            *total_score -= clicky_upgraders.cost;
+            clicky_upgraders.cost *= clicky_upgraders.cost_multi;
+            clicky_upgraders.count *= 1.15;
+        }
+
+
+    }
+
+}
+
 fn main() -> Result<(), eframe::Error> {
     let options = eframe::NativeOptions::default();
 
@@ -83,9 +100,10 @@ struct Upgrader {
 }
 
 struct ClickyUpgraders {
+    name: String,
     cost: f64,
     count: f64,
-    cost_multi: f64,
+    cost_multi: f64
 }
 
 impl Default for MyApp {
@@ -130,7 +148,22 @@ impl Default for MyApp {
                     passive_score_ps: 0.0,
                 },
             ],
-            clicky_upgraders: vec![],
+            clicky_upgraders: vec![
+                ClickyUpgraders {
+                    name: "base".to_string(),
+                    cost: 250.0,
+                    count: 1.0,
+                    cost_multi: 1.15,
+                },
+                ClickyUpgraders {
+
+                    name: "multi".to_string(),
+                    cost: 50.0,
+                    count: 1.0,
+                    cost_multi: 1.3,
+
+                }
+            ]
         }
     }
 }
@@ -155,33 +188,24 @@ impl eframe::App for MyApp {
         egui::Panel::right("clicker_options").show_inside(ui, |ui| {
             ui.heading("Clicker");
 
-            ui.label(format!("Base Clicky: {:.2}", self.base_clicky));
+            ui.label(format!("Base Clicky: {:.2}", self.clicky_upgraders[0].count));
             if ui.button("Increase base clicky").clicked() {
-                if can_afford(self.base_clicky_cost, self.total_score) {
-                    self.base_clicky = self.base_clicky + 1.0;
-                    self.total_score -= self.base_clicky_cost;
-                }
+                handleClickyUpgraders(&mut self.clicky_upgraders[0], &mut self.total_score);
             }
 
-            ui.label(format!("Cost: {:.2}", self.base_clicky_cost));
+            ui.label(format!("Cost: {:.2}", self.clicky_upgraders[0].cost));
 
             ui.separator();
 
-            ui.label(format!(
-                "Clicky Multiplier: {:.2}",
-                self.clicker_upgrade_multi
-            ));
+            ui.label(format!("Clicky Multiplier: {:.2}", self.clicky_upgraders[1].count));
             if ui.button("Increase clicky multiplier").clicked() {
-                if can_afford(self.clicker_multi_cost, self.total_score) {
-                    self.clicker_upgrade_multi = self.clicker_upgrade_multi * 1.1;
-                    self.total_score -= self.clicker_multi_cost;
-                }
+                handleClickyUpgraders(&mut self.clicky_upgraders[1], &mut self.total_score);
             }
-            ui.label(format!("Cost: {:.2}", self.clicker_multi_cost));
+            ui.label(format!("Cost: {:.2}", self.clicky_upgraders[1].cost));
 
             ui.separator();
 
-            self.per_click_totals = self.base_clicky * self.clicker_upgrade_multi;
+            self.per_click_totals = self.clicky_upgraders[0].count * self.clicky_upgraders[1].count;
             ui.label("Per Click Stats");
             ui.label(format!("{:.2}", self.per_click_totals));
 
@@ -191,7 +215,7 @@ impl eframe::App for MyApp {
             ui.heading("Idler");
 
             if ui.button("Increment score").clicked() {
-                self.total_score += self.base_clicky * self.clicker_upgrade_multi;
+                self.total_score += self.per_click_totals;
             }
 
             ui.label(format!("Total Score: {:.2}", self.total_score));

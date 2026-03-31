@@ -77,6 +77,7 @@ impl eframe::App for MyApp {
 
             ui.separator();
 
+            ui.heading("Get lessons!");
             ui.horizontal(|ui| {
                 for upgrader in &mut self.upgraders {
                     ui.vertical(|ui| {
@@ -88,6 +89,33 @@ impl eframe::App for MyApp {
                     });
                 }
             });
+            ui.separator();
+            //the story is this section of the game
+            //is when he has to go to work
+            //but then eventually he'll graduate to a rockstar or something maybe
+            ui.heading("Day Job (typing speed test thing)");
+            //now to figure this bit out
+
+            for job in &mut self.jobs {
+                if job.finished == false {
+                    ui.label("Target");
+                    ui.heading(format!("{}", job.target_text));
+                    ui.text_edit_singleline(&mut job.text_input);
+                    if job.text_input == job.target_text {
+                        job.finished = true;
+                        self.job_count -= 1.0;
+                    } else {
+                        job.finished = false;
+                    }
+                    ui.label(format!("Finished: {}", job.finished));
+                    ui.separator();
+                }
+            }
+            ui.separator();
+            if self.job_count == 0.0 {
+                ui.heading("Well Done! No more jobs to complete");
+                ui.label(format!("The job count is: {}", self.job_count));
+            }
         });
     }
 }

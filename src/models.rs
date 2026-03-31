@@ -7,6 +7,9 @@ pub struct MyApp {
 
     pub upgraders: Vec<Upgrader>,
     pub clicky_upgraders: Vec<ClickyUpgrader>,
+
+    pub jobs: Vec<Job>,
+    pub job_count: f64,
 }
 
 pub struct Upgrader {
@@ -22,6 +25,12 @@ pub struct ClickyUpgrader {
     pub cost: f64,
     pub count: f64,
     pub cost_multi: f64,
+}
+
+pub struct Job {
+    pub target_text: String,
+    pub text_input: String,
+    pub finished: bool,
 }
 
 impl Default for MyApp {
@@ -50,7 +59,7 @@ impl Default for MyApp {
                 },
                 Upgrader {
                     name: "cowboy_chordist".to_string(),
-                    cost: 10000.0,
+                    cost: 1000.0,
                     count: 0.0,
                     cost_multi: 1.5,
                     passive_score_ps: 0.0,
@@ -70,6 +79,19 @@ impl Default for MyApp {
                     cost_multi: 1.3,
                 },
             ],
+            jobs: vec![
+                Job {
+                    target_text: "the quick brown fox jumped over the lazy dog".to_string(),
+                    text_input: "".to_string(),
+                    finished: false,
+                },
+                Job {
+                    target_text: "the way to the finished is the long path home".to_string(),
+                    text_input: "".to_string(),
+                    finished: false,
+                },
+            ],
+            job_count: 2.0,
         }
     }
 }

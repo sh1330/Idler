@@ -29,7 +29,7 @@ fn handleUpgrade(upgrader: &mut Upgrader, total_score: &mut f64) {
             upgrader.cost *= upgrader.cost_multi;
             upgrader.count += 1.0;
             upgrader.passive_score_ps += 2.0;
-        
+
         //if jacob collier upgrade this way
         } else if upgrader.name == "jacob_collier" {
             *total_score -= upgrader.cost;
@@ -53,6 +53,7 @@ fn main() -> Result<(), eframe::Error> {
 struct MyApp {
     //state stuff
     last_update_time: std::time::Instant,
+    per_click_totals: f64,
 
     //score
     total_score: f64,
@@ -62,13 +63,10 @@ struct MyApp {
     base_clicky: f64,
     clicker_upgrade_multi: f64,
 
-   
-   
     //clicky costs
     base_clicky_cost: f64,
     clicker_multi_cost: f64,
 
-   
     upgraders: Vec<Upgrader>,
     clicky_upgraders: Vec<ClickyUpgraders>,
 }
@@ -93,6 +91,7 @@ impl Default for MyApp {
         Self {
             //status
             last_update_time: std::time::Instant::now(),
+            per_click_totals: 0.0,
 
             //score
             total_score: 0.0,
@@ -102,13 +101,10 @@ impl Default for MyApp {
             base_clicky: 1.0,
             clicker_upgrade_multi: 1.0,
 
-            
-            
             //clicky costs
             base_clicky_cost: 250.0,
             clicker_multi_cost: 50.0,
 
-           
             upgraders: vec![
                 Upgrader {
                     name: "blues".to_string(),
@@ -148,7 +144,7 @@ impl eframe::App for MyApp {
         });
 
         egui::Panel::right("clicker_options").show_inside(ui, |ui| {
-            ui.label("Clicker Options");
+            ui.heading("Clicker");
 
             ui.label(format!("Base Clicky: {:.2}", self.base_clicky));
             if ui.button("Increase base clicky").clicked() {
@@ -173,6 +169,13 @@ impl eframe::App for MyApp {
                 }
             }
             ui.label(format!("Cost: {:.2}", self.clicker_multi_cost));
+
+            ui.separator();
+
+            self.per_click_totals = self.base_clicky * self.clicker_upgrade_multi;
+            ui.label("Per Click Stats");
+            ui.label(format!("{:.2}", self.per_click_totals));
+
         });
 
         egui::CentralPanel::default().show_inside(ui, |ui| {

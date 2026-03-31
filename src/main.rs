@@ -1,6 +1,28 @@
 
 use eframe::egui;
 
+fn can_afford(cost: f64, total_score: f64) -> bool {
+    total_score >= cost
+}
+
+
+
+fn handleUpgrade(upgrader:&mut Upgrader, total_score: &mut f64) {
+    if can_afford(upgrader.cost, *total_score) {
+        if upgrader.name == "blues" {
+            *total_score -= upgrader.cost; 
+            upgrader.cost *= upgrader.cost_multi;
+            upgrader.count += 1.0;
+
+        } else if upgrader.name == "jacob_collier" {
+            *total_score -= upgrader.cost; 
+            upgrader.cost *= upgrader.cost_multi;
+            upgrader.count += 1.0;
+        } 
+    }
+}
+
+
 fn main() -> Result<(), eframe::Error> {
     let options = eframe::NativeOptions::default();
 
@@ -37,6 +59,23 @@ struct MyApp {
     blues_upgrade_cost: f64,
     jacob_collier_cost: f64,
 
+    upgraders: Vec<Upgrader>,
+    clicky_upgraders: Vec<ClickyUpgraders>,
+}
+
+
+struct Upgrader {
+    // each upgrader has a cost, count, and cost_multi
+    name: String,
+    cost: f64,
+    count: f64,
+    cost_multi: f64,
+}
+
+struct ClickyUpgraders {
+    cost: f64,
+    count: f64,
+    cost_multi: f64,
 }
 
 impl Default for MyApp {
@@ -58,12 +97,29 @@ impl Default for MyApp {
             //costs
             
             //clicky costs
-            base_clicky_cost: f64,
-            clicker_multi_cost: f64,
+            base_clicky_cost: 250.0,
+            clicker_multi_cost: 50.0,
 
             //upgrader costs
-            blues_upgrade_cost: 10,
+            blues_upgrade_cost: 10.0,
             jacob_collier_cost: 100.0,
+
+            upgraders: vec![
+                Upgrader {
+                    name: "blues".to_string(),
+                    cost: 10.0,
+                    count: 0.0,
+                    cost_multi: 1.15,
+                },
+
+                Upgrader {
+                    name: "jacob_collier".to_string(),
+                    cost: 100.0,
+                    count: 0.0,
+                    cost_multi: 1.15,
+                },
+            ],
+            clicky_upgraders: vec![],
         }
     }
 }
@@ -89,13 +145,25 @@ impl eframe::App for MyApp {
 
             ui.label(format!("Base Clicky: {:.2}", self.base_clicky));
             if ui.button("Increase base clicky").clicked() {
+                if can_afford(self.base_clicky_cost, self.total_score) {
                     self.base_clicky = self.base_clicky + 1.0;
+                    self.total_score -= self.base_clicky_cost;
+                } 
             }
 
+            ui.label(format!("Cost: {:.2}", self.base_clicky_cost));
+
+
+            ui.separator();
+            
             ui.label(format!("Clicky Multiplier: {:.2}", self.clicker_upgrade_multi));
             if ui.button("Increase clicky multiplier").clicked() {
-                self.clicker_upgrade_multi = self.clicker_upgrade_multi * 1.1;
+                if can_afford(self.clicker_multi_cost, self.total_score){
+                    self.clicker_upgrade_multi = self.clicker_upgrade_multi * 1.1;
+                    self.total_score -= self.clicker_multi_cost;
+                }
             }
+            ui.label(format!("Cost: {:.2}", self.clicker_multi_cost));
         });
 
         
@@ -111,20 +179,24 @@ impl eframe::App for MyApp {
 
             ui.label(format!("Total Score: {:.0}", self.total_score));
 
-            ui.horizontal(|ui| {
-                ui.vertical(|ui| {
-                    if ui.button("Blues Upgrade").clicked() {
-                        self.blues_upgrade_count += 1.0;
-                    }
-                    ui.label(format!("blues count: {}", self.blues_upgrade_count));
-                });
+            ui.separator();
 
-                ui.vertical(|ui| {
-                    if ui.button("Jacob Collier Upgrade").clicked() {
-                        self.jacob_collier_count += 1.0;
-                    }
-                    ui.label(format!("jacob collier count: {}", self.jacob_collier_count));
-                });
+            ui.horizontal(|ui| {
+
+                for upgrader in &mut self.upgraders {
+                    
+                    ui.vertical(|ui| {
+                        if ui.button(format!("{} Upgrade", upgrader.name)).clicked() {
+                            handleUpgrade(upgrader, &mut self.total_score);
+                        }
+                        ui.label(format!("{} count: {}", upgrader.name, upgrader.count));
+                        ui.label(format!("Cost :{:.0}", upgrader.cost));
+                    });
+
+
+                }
+                
+
             });
         });
     }

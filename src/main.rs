@@ -131,16 +131,18 @@ impl Default for MyApp {
 }
 
 impl eframe::App for MyApp {
-    fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
-        ui.ctx().request_repaint_after(std::time::Duration::from_millis(100));
+    fn logic(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        ctx.request_repaint_after(std::time::Duration::from_secs_f64(1.0 / 60.0));
+
         let now = std::time::Instant::now();
         let seconds_passed = now.duration_since(self.last_update_time).as_secs_f64();
         self.last_update_time = now;
 
-        apply_passive_score(&self.upgraders, &mut self.total_score, seconds_passed);
         self.dmg_per_second = passive_score_calc(&self.upgraders);
+        self.total_score += self.dmg_per_second * seconds_passed;
+    }
 
-
+    fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
         egui::Panel::left("settings").show_inside(ui, |ui| {
             ui.label("Settings Tab");
         });
@@ -180,8 +182,8 @@ impl eframe::App for MyApp {
                 self.total_score += self.base_clicky * self.clicker_upgrade_multi;
             }
 
-            ui.label(format!("Total Score: {:.0}", self.total_score));
-            ui.label(format!("Total Passive: {:.0}", passive_score_calc(&self.upgraders)));
+            ui.label(format!("Total Score: {:.2}", self.total_score));
+            ui.label(format!("Total Passive: {:.2}", self.dmg_per_second));
 
             ui.separator();
 

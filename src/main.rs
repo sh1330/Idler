@@ -16,10 +16,7 @@ fn passive_score_calc(upgraders: &[Upgrader]) -> f64 {
     total_passive
 }
 
-fn apply_passive_score(upgraders: &[Upgrader], total_score: &mut f64, seconds_passed: f64) {
-    let passive_per_second = passive_score_calc(upgraders);
-    *total_score += passive_per_second * seconds_passed;
-}
+
 
 fn handleUpgrade(upgrader: &mut Upgrader, total_score: &mut f64) {
     if can_afford(upgrader.cost, *total_score) {

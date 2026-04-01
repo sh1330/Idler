@@ -37,6 +37,8 @@ pub struct Job {
     pub target_text: String,
     pub text_input: String,
     pub finished: bool,
+    pub completion_percentage: f64,
+    //pub red:
 }
 
 impl Job {
@@ -45,6 +47,7 @@ impl Job {
             target_text,
             text_input: String::new(),
             finished: false,
+            completion_percentage: 0.0,
         }
     }
 }

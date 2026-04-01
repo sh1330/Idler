@@ -4,7 +4,8 @@ mod models;
 use eframe::egui;
 
 use crate::logic::{
-    generate_target_text, handle_clicky_upgrader, handle_upgrade, passive_score_calc,
+    completed_percent, completion_color, generate_target_text, handle_clicky_upgrader,
+    handle_upgrade, passive_score_calc,
 };
 use crate::models::{Job, MyApp};
 
@@ -107,6 +108,7 @@ impl eframe::App for MyApp {
                 for upgrader in &mut self.upgraders {
                     egui::Frame::group(ui.style())
                         .fill(egui::Color32::from_rgb(117, 35, 35))
+                        .corner_radius(15)
                         .show(ui, |ui| {
                             ui.vertical(|ui| {
                                 if ui.button(format!("{} Upgrade", upgrader.name)).clicked() {
@@ -131,23 +133,28 @@ impl eframe::App for MyApp {
             ui.separator();
             for job in &mut self.jobs {
                 if job.finished == false {
-                    egui::Frame::group(ui.style()).show(ui, |ui| {
-                        ui.label("Target");
-                        ui.heading(
-                            egui::RichText::new(format!("{}", job.target_text))
-                                .size(24.0)
-                                .color(egui::Color32::from_rgb(227, 148, 159))
-                                .strong(),
-                        );
-                        ui.text_edit_singleline(&mut job.text_input);
-                        if job.text_input == job.target_text {
-                            job.finished = true;
-                            self.job_count -= 1.0;
-                        } else {
-                            job.finished = false;
-                        }
-                        ui.label(format!("Finished: {}", job.finished));
-                    });
+                    job.completion_percentage =
+                        completed_percent(&job.target_text, &job.text_input);
+
+                    egui::Frame::group(ui.style())
+                        .corner_radius(15)
+                        .show(ui, |ui| {
+                            ui.label("Target");
+                            ui.heading(
+                                egui::RichText::new(format!("{}", job.target_text))
+                                    .size(24.0)
+                                    .color(completion_color(job.completion_percentage))
+                                    .strong(),
+                            );
+                            ui.text_edit_singleline(&mut job.text_input);
+                            if job.text_input == job.target_text {
+                                job.finished = true;
+                                self.job_count -= 1.0;
+                            } else {
+                                job.finished = false;
+                            }
+                            ui.label(format!("Completed Percent:{}", job.completion_percentage));
+                        });
                     ui.separator();
                 }
             }

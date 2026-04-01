@@ -14,7 +14,14 @@ fn main() -> Result<(), eframe::Error> {
     eframe::run_native(
         "Idler",
         options,
-        Box::new(|_cc| Ok(Box::new(MyApp::default()))),
+        Box::new(|cc| {
+            cc.egui_ctx.style_mut(|style| {
+                style.visuals.override_text_color = Some(egui::Color32::WHITE);
+                style.visuals.panel_fill = egui::Color32::from_rgb(15, 15, 15);
+            });
+
+            Ok(Box::new(MyApp::default()))
+        }),
     )
 }
 
@@ -38,10 +45,18 @@ impl eframe::App for MyApp {
     }
 
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
+        //SETTINGS
+        //
+        //
+        //
         egui::Panel::left("settings").show_inside(ui, |ui| {
             ui.label("Settings Tab");
         });
 
+        //Clicker Options
+        //
+        //
+        //
         egui::Panel::right("clicker_options").show_inside(ui, |ui| {
             ui.heading("Clicker");
 
@@ -74,6 +89,7 @@ impl eframe::App for MyApp {
             ui.label(format!("{:.2}", self.per_click_totals));
         });
 
+        //Central Idler Content
         egui::CentralPanel::default().show_inside(ui, |ui| {
             ui.heading("Idler");
 
@@ -89,44 +105,57 @@ impl eframe::App for MyApp {
             ui.heading("Get lessons!");
             ui.horizontal(|ui| {
                 for upgrader in &mut self.upgraders {
-                    ui.vertical(|ui| {
-                        if ui.button(format!("{} Upgrade", upgrader.name)).clicked() {
-                            handle_upgrade(upgrader, &mut self.total_score);
-                        }
-                        ui.label(format!("{} count: {}", upgrader.name, upgrader.count));
-                        ui.label(format!("Cost: {:.0}", upgrader.cost));
-                    });
+                    egui::Frame::group(ui.style())
+                        .fill(egui::Color32::from_rgb(117, 35, 35))
+                        .show(ui, |ui| {
+                            ui.vertical(|ui| {
+                                if ui.button(format!("{} Upgrade", upgrader.name)).clicked() {
+                                    handle_upgrade(upgrader, &mut self.total_score);
+                                }
+                                ui.label(format!("{} count: {}", upgrader.name, upgrader.count));
+                                ui.label(format!("Cost: {:.0}", upgrader.cost));
+                            });
+                        });
                 }
             });
             ui.separator();
             //the story is this section of the game
             //is when he has to go to work
             //but then eventually he'll graduate to a rockstar or something maybe
-            ui.heading("Day Job (typing speed test thing)");
-            //now to figure this bit out
-
+            ui.label(
+                egui::RichText::new("Day Job")
+                    .size(24.0)
+                    .strong()
+                    .color(egui::Color32::LIGHT_BLUE),
+            );
+            ui.separator();
             for job in &mut self.jobs {
                 if job.finished == false {
-                    ui.label("Target");
-                    ui.heading(format!("{}", job.target_text));
-                    ui.text_edit_singleline(&mut job.text_input);
-                    if job.text_input == job.target_text {
-                        job.finished = true;
-                        self.job_count -= 1.0;
-                    } else {
-                        job.finished = false;
-                    }
-                    ui.label(format!("Finished: {}", job.finished));
+                    egui::Frame::group(ui.style()).show(ui, |ui| {
+                        ui.label("Target");
+                        ui.heading(
+                            egui::RichText::new(format!("{}", job.target_text))
+                                .size(24.0)
+                                .color(egui::Color32::from_rgb(227, 148, 159))
+                                .strong(),
+                        );
+                        ui.text_edit_singleline(&mut job.text_input);
+                        if job.text_input == job.target_text {
+                            job.finished = true;
+                            self.job_count -= 1.0;
+                        } else {
+                            job.finished = false;
+                        }
+                        ui.label(format!("Finished: {}", job.finished));
+                    });
                     ui.separator();
                 }
             }
-            ui.separator();
             if self.job_count == 0.0 {
                 ui.heading("Well Done! No more jobs to complete");
                 ui.label(format!("The job count is: {}", self.job_count));
             }
 
-            ui.separator();
             ui.heading(format!(
                 "Job pile up that gets you fired: {}",
                 self.jobs_pileup_limit

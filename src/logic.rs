@@ -1,4 +1,4 @@
-use crate::models::{ClickyUpgrader, Upgrader};
+use crate::models::{ClickyUpgrader, Upgrader, WordList};
 
 pub fn can_afford(cost: f64, total_score: f64) -> bool {
     total_score >= cost
@@ -47,4 +47,20 @@ pub fn handle_clicky_upgrader(clicky_upgrader: &mut ClickyUpgrader, total_score:
             clicky_upgrader.count *= 1.15;
         }
     }
+}
+
+pub fn generate_target_text(word_list: &WordList, length: usize) -> String {
+    let mut target_text = String::new();
+
+    for i in 0..length {
+        let random_word = word_list.random_select();
+
+        if i > 0 {
+            target_text.push(' ');
+        }
+
+        target_text.push_str(&random_word);
+    }
+
+    target_text
 }

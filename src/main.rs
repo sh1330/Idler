@@ -3,8 +3,10 @@ mod models;
 
 use eframe::egui;
 
-use crate::logic::{handle_clicky_upgrader, handle_upgrade, passive_score_calc};
-use crate::models::MyApp;
+use crate::logic::{
+    generate_target_text, handle_clicky_upgrader, handle_upgrade, passive_score_calc,
+};
+use crate::models::{Job, MyApp};
 
 fn main() -> Result<(), eframe::Error> {
     let options = eframe::NativeOptions::default();
@@ -26,6 +28,13 @@ impl eframe::App for MyApp {
 
         self.dmg_per_second = passive_score_calc(&self.upgraders);
         self.total_score += self.dmg_per_second * seconds_passed;
+
+        while now.duration_since(self.typing_job_start).as_secs_f64() >= 10.0 {
+            let target_text = generate_target_text(&self.word_list, 10);
+            self.jobs.push(Job::new(target_text));
+            self.job_count += 1.0;
+            self.typing_job_start += std::time::Duration::from_secs(15);
+        }
     }
 
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
@@ -115,6 +124,17 @@ impl eframe::App for MyApp {
             if self.job_count == 0.0 {
                 ui.heading("Well Done! No more jobs to complete");
                 ui.label(format!("The job count is: {}", self.job_count));
+            }
+
+            ui.separator();
+            ui.heading(format!(
+                "Job pile up that gets you fired: {}",
+                self.jobs_pileup_limit
+            ));
+            if self.job_count >= self.jobs_pileup_limit {
+                ui.heading("YOU'RE FIRED");
+            } else {
+                ui.heading("The boss thinks you're doing an acceptable job");
             }
         });
     }

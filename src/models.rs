@@ -1,3 +1,5 @@
+use rand::prelude::IndexedRandom;
+
 pub struct MyApp {
     pub last_update_time: std::time::Instant,
     pub per_click_totals: f64,
@@ -10,6 +12,10 @@ pub struct MyApp {
 
     pub jobs: Vec<Job>,
     pub job_count: f64,
+    pub jobs_pileup_limit: f64,
+
+    pub typing_job_start: std::time::Instant,
+    pub word_list: WordList,
 }
 
 pub struct Upgrader {
@@ -31,6 +37,51 @@ pub struct Job {
     pub target_text: String,
     pub text_input: String,
     pub finished: bool,
+}
+
+impl Job {
+    pub fn new(target_text: String) -> Self {
+        Self {
+            target_text,
+            text_input: String::new(),
+            finished: false,
+        }
+    }
+}
+
+pub struct WordList {
+    pub words: Vec<String>,
+}
+
+impl WordList {
+    pub fn new() -> Self {
+        Self {
+            words: vec![
+                "the", "be", "to", "of", "and", "a", "in", "that", "have", "i", "it", "for", "not",
+                "on", "with", "he", "as", "you", "do", "at", "this", "but", "his", "by", "from",
+                "they", "we", "say", "her", "she", "or", "an", "will", "my", "one", "all", "would",
+                "there", "their", "what", "so", "up", "out", "if", "about", "who", "get", "which",
+                "go", "me", "when", "make", "can", "like", "time", "no", "just", "him", "know",
+                "take", "people", "into", "year", "your", "good", "some", "could", "them", "see",
+                "other", "than", "then", "now", "look", "only", "come", "its", "over", "think",
+                "also", "back", "after", "use", "two", "how", "our", "work", "first", "well",
+                "way", "even", "new", "want", "because", "any", "these", "give", "day", "most",
+                "us",
+            ]
+            .into_iter()
+            .map(String::from)
+            .collect(),
+        }
+    }
+
+    pub fn random_select(&self) -> String {
+        let mut rng = rand::rng();
+
+        self.words
+            .choose(&mut rng)
+            .cloned()
+            .unwrap_or_else(|| "rust".to_string())
+    }
 }
 
 impl Default for MyApp {
@@ -80,18 +131,14 @@ impl Default for MyApp {
                 },
             ],
             jobs: vec![
-                Job {
-                    target_text: "the quick brown fox jumped over the lazy dog".to_string(),
-                    text_input: "".to_string(),
-                    finished: false,
-                },
-                Job {
-                    target_text: "the way to the finished is the long path home".to_string(),
-                    text_input: "".to_string(),
-                    finished: false,
-                },
+                Job::new("the quick brown fox jumped over the lazy dog".to_string()),
+                Job::new("the way to the finish is the long path home".to_string()),
             ],
             job_count: 2.0,
+            jobs_pileup_limit: 10.0,
+
+            typing_job_start: std::time::Instant::now(),
+            word_list: WordList::new(),
         }
     }
 }

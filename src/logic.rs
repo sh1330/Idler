@@ -18,21 +18,18 @@ pub fn passive_score_calc(upgraders: &[Upgrader]) -> f64 {
 
 pub fn handle_upgrade(upgrader: &mut Upgrader, total_score: &mut f64) {
     if can_afford(upgrader.cost, *total_score) {
+        *total_score -= upgrader.cost;
+        upgrader.cost *= upgrader.cost_multi;
+        upgrader.count += 1.0;
+
         if upgrader.name == "blues" {
-            *total_score -= upgrader.cost;
-            upgrader.cost *= upgrader.cost_multi;
-            upgrader.count += 1.0;
             upgrader.passive_score_ps += 2.0;
         } else if upgrader.name == "jacob_collier" {
-            *total_score -= upgrader.cost;
-            upgrader.cost *= upgrader.cost_multi;
-            upgrader.count += 1.0;
             upgrader.passive_score_ps += 10.0;
         } else if upgrader.name == "cowboy_chordist" {
-            *total_score -= upgrader.cost;
-            upgrader.cost *= upgrader.cost_multi;
-            upgrader.count += 1.0;
             upgrader.passive_score_ps += 1000.0;
+        } else if upgrader.name == "Tyler_Toney" {
+            upgrader.passive_score_ps += 700000.0;
         }
     }
 }

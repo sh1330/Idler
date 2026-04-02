@@ -38,7 +38,6 @@ pub struct Job {
     pub text_input: String,
     pub finished: bool,
     pub completion_percentage: f64,
-    //pub red:
 }
 
 impl Job {
@@ -116,6 +115,13 @@ impl Default for MyApp {
                     cost: 1000.0,
                     count: 0.0,
                     cost_multi: 1.5,
+                    passive_score_ps: 0.0,
+                },
+                Upgrader {
+                    name: "Tyler_Toney".to_string(),
+                    cost: 1000000.0,
+                    count: 0.0,
+                    cost_multi: 1.05,
                     passive_score_ps: 0.0,
                 },
             ],
